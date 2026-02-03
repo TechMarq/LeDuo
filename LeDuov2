@@ -1,0 +1,384 @@
+import { useState, useEffect } from "react";
+
+const DECAY_PER_DAY = 1.5;
+const MAX_POINTS = 100;
+const CREDIT_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function LoveCube({ points }) {
+  const pct = Math.min((points / MAX_POINTS) * 100, 100);
+  const color = `hsl(${Math.max(0, 20 - pct * 0.1)}, ${70 + pct * 0.3}%, ${45 - pct * 0.1}%)`;
+  const glow = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 60%)`;
+  const msg = pct < 15 ? "💔 Precisa de amor!" : pct < 40 ? "💛 Crescendo..." : pct < 70 ? "🧡 Esquentando!" : "❤️ Transbordo de amor!";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "12px 0" }}>
+      <div style={{
+        width: 160, height: 180, position: "relative",
+        background: "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.3))",
+        border: "2px solid rgba(255,255,255,0.15)", borderRadius: 16, overflow: "hidden",
+        boxShadow: `0 0 30px ${glow}44, inset 0 0 40px rgba(0,0,0,0.3)`
+      }}>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} style={{ position: "absolute", left: 0, right: 0, top: `${20 * (i + 1)}px`, height: 1, background: "rgba(255,255,255,0.06)", zIndex: 1 }} />
+        ))}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, height: `${pct}%`,
+          background: `linear-gradient(180deg, ${glow}, ${color})`,
+          transition: "height 1.2s cubic-bezier(.4,0,.2,1)", borderRadius: "0 0 14px 14px"
+        }}>
+          <div style={{ position: "absolute", top: -8, left: "-20%", right: "-20%", height: 18, background: `linear-gradient(180deg, transparent, ${color})`, animation: "wave 2.5s ease-in-out infinite", borderRadius: "50%" }} />
+          {pct > 10 && [0, 1, 2].map(i => (
+            <div key={i} style={{
+              position: "absolute", width: 6 + i * 4, height: 6 + i * 4, borderRadius: "50%",
+              background: "rgba(255,255,255,0.15)", left: `${20 + i * 30}%`,
+              animation: `bubble ${2 + i * 0.7}s ease-in infinite`, animationDelay: `${i * 0.4}s`
+            }} />
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 0, left: 0, width: "40%", height: "100%", background: "linear-gradient(135deg, rgba(255,255,255,0.1), transparent 60%)", borderRadius: 16, pointerEvents: "none", zIndex: 2 }} />
+      </div>
+      <style>{`@keyframes wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-10px)}}@keyframes bubble{0%{transform:translateY(0);opacity:.6}100%{transform:translateY(-60px);opacity:0}}`}</style>
+      <p style={{ color: "#ccc", fontSize: 13, marginTop: 8 }}>{msg}</p>
+      <p style={{ color: "#aaa", fontSize: 12 }}>{Math.round(points)} / {MAX_POINTS} pontos</p>
+    </div>
+  );
+}
+
+const S = {
+  wrap: { minHeight: "100vh", background: "#0f0a14", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif", padding: "0" },
+  container: { width: "100%", maxWidth: 420, minHeight: "100vh", display: "flex", flexDirection: "column", background: "#15101f", position: "relative" },
+  header: { display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "14px 16px 10px", background: "linear-gradient(180deg, #1f1030, #15101f)" },
+  content: { flex: 1, padding: "12px 16px 90px", overflowY: "auto" },
+  nav: { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 420, display: "flex", justifyContent: "space-around", background: "rgba(21,16,31,0.95)", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "8px 0 14px" },
+  navBtn: { background: "none", border: "none", color: "#777", display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer", flex: 1, padding: "4px 0" },
+  navActive: { color: "#f9a8d4" },
+  input: { width: "100%", background: "#1e1e2e", border: "1px solid #3a2a4a", borderRadius: 10, padding: "10px 12px", color: "#fff", fontSize: 14, marginBottom: 10, boxSizing: "border-box", outline: "none" },
+  btn: { width: "100%", padding: "12px", background: "linear-gradient(135deg, #e11d48, #c026d3)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer", marginTop: 4 },
+  smallBtn: { padding: "5px 12px", background: "#e11d48", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" },
+  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" },
+  modal: { background: "#1a1025", borderRadius: 18, padding: 24, width: "100%", maxWidth: 380, boxShadow: "0 10px 40px rgba(0,0,0,0.5)" },
+  card: { background: "#1e1e2e", borderRadius: 10, padding: 12, marginBottom: 8 },
+  cardPending: { background: "#2a1a30", borderRadius: 10, padding: 12, marginBottom: 8 },
+  revealBtn: { padding: "8px 14px", background: "linear-gradient(135deg,#e11d48,#c026d3)", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+  switchBtn: { padding: "4px 10px", background: "#2a1a30", border: "1px solid #3a2a4a", borderRadius: 8, color: "#aaa", fontSize: 11, cursor: "pointer" },
+  setupBox: { width: "100%", maxWidth: 380, padding: 32, textAlign: "center" },
+  title: { color: "#fff", margin: "0 0 8px", fontWeight: 700 }
+};
+
+export default function App() {
+  const [state, setState] = useState({
+    setup: false, names: ["", ""], activeUser: 0, points: 42,
+    acts: [], pendingActs: [], notes: [[], []], revealedNotes: [],
+    credits: [1, 1], lastCreditDate: Date.now() - CREDIT_INTERVAL_MS, lastDecayTime: Date.now()
+  });
+  const [screen, setScreen] = useState("home");
+  const [modal, setModal] = useState(null);
+  const [newAct, setNewAct] = useState("");
+  const [newNote, setNewNote] = useState("");
+  const [evalAct, setEvalAct] = useState(null);
+  const [evalScore, setEvalScore] = useState(5);
+  const [revealedNote, setRevealedNote] = useState(null);
+  const [revealAnim, setRevealAnim] = useState(false);
+
+  const u = state.activeUser;
+  const other = u === 0 ? 1 : 0;
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setState(p => {
+        const hrs = (Date.now() - p.lastDecayTime) / 3600000;
+        if (hrs >= 1) return { ...p, points: Math.max(0, p.points - hrs * (DECAY_PER_DAY / 24)), lastDecayTime: Date.now() };
+        return p;
+      });
+    }, 60000);
+    return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setState(p => {
+      if (Date.now() - p.lastCreditDate >= CREDIT_INTERVAL_MS)
+        return { ...p, credits: [p.credits[0] + 1, p.credits[1] + 1], lastCreditDate: Date.now() };
+      return p;
+    });
+    check();
+    const iv = setInterval(check, 60000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const closeModal = () => { setModal(null); setEvalAct(null); setRevealedNote(null); setRevealAnim(false); };
+
+  const addAct = () => {
+    if (!newAct.trim()) return;
+    setState(p => ({ ...p, pendingActs: [...p.pendingActs, { id: Date.now(), text: newAct.trim(), createdBy: u, createdAt: Date.now(), scores: [null, null] }] }));
+    setNewAct(""); closeModal();
+  };
+
+  const submitEval = () => {
+    if (!evalAct) return;
+    setState(p => {
+      const scores = [...evalAct.scores]; scores[u] = evalScore;
+      let pending = p.pendingActs.map(a => a.id === evalAct.id ? { ...a, scores } : a);
+      let acts = [...p.acts], pts = p.points;
+      const updated = pending.find(a => a.id === evalAct.id);
+      if (updated.scores[0] !== null && updated.scores[1] !== null) {
+        pts = Math.min(MAX_POINTS, pts + (updated.scores[0] + updated.scores[1]) / 2);
+        acts = [...p.acts, updated];
+        pending = pending.filter(a => a.id !== evalAct.id);
+      }
+      return { ...p, pendingActs: pending, acts, points: pts };
+    });
+    closeModal();
+  };
+
+  const addNote = () => {
+    if (!newNote.trim()) return;
+    setState(p => { const n = [...p.notes]; n[u] = [...n[u], { text: newNote.trim(), createdAt: Date.now() }]; return { ...p, notes: n }; });
+    setNewNote(""); closeModal();
+  };
+
+  const handleReveal = () => {
+    const otherNotes = state.notes[other];
+    if (!otherNotes.length || state.credits[u] <= 0) return;
+    const note = otherNotes[Math.floor(Math.random() * otherNotes.length)];
+    const credits = [...state.credits]; credits[u] -= 1;
+    setState(p => ({ ...p, credits, revealedNotes: [...p.revealedNotes, { ...note, revealedBy: u, revealedAt: Date.now() }] }));
+    setRevealedNote(note); setRevealAnim(false); setModal("revealed");
+    setTimeout(() => setRevealAnim(true), 900);
+  };
+
+  // ── SETUP ──
+  if (!state.setup) {
+    return (
+      <div style={S.wrap}>
+        <div style={S.setupBox}>
+          <h1 style={{ ...S.title, fontSize: 30 }}>💕 LeDuo</h1>
+          <p style={{ color: "#bbb", marginBottom: 24 }}>Insira os nomes do casal para começar</p>
+          {[0, 1].map(i => (
+            <input key={i} placeholder={i === 0 ? "Pessoa 1" : "Pessoa 2"} value={state.names[i]}
+              onChange={e => { const n = [...state.names]; n[i] = e.target.value; setState(p => ({ ...p, names: n })); }}
+              style={S.input} />
+          ))}
+          <button style={S.btn} disabled={!state.names[0] || !state.names[1]} onClick={() => setState(p => ({ ...p, setup: true }))}>Começar 💕</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── MODAL ──
+  const renderModal = () => {
+    if (!modal) return null;
+    let body = null;
+
+    if (modal === "addAct") {
+      body = (
+        <>
+          <h3 style={{ color: "#fff", margin: "0 0 4px" }}>💝 Novo Ato de Amor</h3>
+          <p style={{ color: "#aaa", fontSize: 13, margin: "0 0 10px" }}>Descreva algo bonito que você fez ou recebeu</p>
+          <textarea value={newAct} onChange={e => setNewAct(e.target.value)} placeholder="Ex: Preparei o jantar favorito..." style={{ ...S.input, minHeight: 90, resize: "vertical" }} />
+          <button style={S.btn} disabled={!newAct.trim()} onClick={addAct}>Adicionar</button>
+        </>
+      );
+    }
+    if (modal === "evaluate" && evalAct) {
+      const done = evalAct.scores[u] !== null;
+      body = (
+        <>
+          <h3 style={{ color: "#fff", margin: "0 0 8px" }}>⭐ Avaliar Ato</h3>
+          <div style={S.card}><p style={{ color: "#eee", fontSize: 14, margin: "0 0 4px" }}>{evalAct.text}</p><p style={{ color: "#666", fontSize: 11, margin: 0 }}>por {state.names[evalAct.createdBy]}</p></div>
+          {done ? <p style={{ color: "#f97316", textAlign: "center" }}>Você já avaliou este ato!</p> : (
+            <>
+              <p style={{ color: "#ccc", fontSize: 14, margin: "0 0 6px" }}>Sua nota: <strong style={{ color: "#f97316" }}>{evalScore}</strong>/10</p>
+              <input type="range" min={0} max={10} value={evalScore} onChange={e => setEvalScore(Number(e.target.value))} style={{ width: "100%", accentColor: "#e11d48" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span style={{ color: "#666", fontSize: 11 }}>0</span><span style={{ color: "#666", fontSize: 11 }}>10</span></div>
+              <button style={S.btn} onClick={submitEval}>Confirmar Nota</button>
+            </>
+          )}
+        </>
+      );
+    }
+    if (modal === "addNote") {
+      body = (
+        <>
+          <h3 style={{ color: "#fff", margin: "0 0 4px" }}>📝 Nova Nota</h3>
+          <p style={{ color: "#aaa", fontSize: 13, margin: "0 0 10px" }}>Escreva algo do seu coração</p>
+          <textarea value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Ex: Hoje eu acordei com muita saudade dele(a)..." style={{ ...S.input, minHeight: 100, resize: "vertical" }} />
+          <button style={S.btn} disabled={!newNote.trim()} onClick={addNote}>Salvar Nota</button>
+        </>
+      );
+    }
+    if (modal === "revealed" && revealedNote) {
+      body = (
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 44, marginBottom: 6 }}>{revealAnim ? "💌" : "✉️"}</div>
+          <h3 style={{ color: "#fff", margin: "0 0 10px" }}>{revealAnim ? `Nota de ${state.names[other]}` : "Abrindo..."}</h3>
+          {revealAnim ? (
+            <>
+              <div style={{ background: "#1e1e2e", borderRadius: 12, padding: 16, margin: "0 0 10px", minHeight: 70, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <p style={{ color: "#f9a8d4", fontSize: 15, fontStyle: "italic", margin: 0 }}>{revealedNote.text}</p>
+              </div>
+              <p style={{ color: "#666", fontSize: 12 }}>{new Date(revealedNote.createdAt).toLocaleString("pt-BR")}</p>
+            </>
+          ) : <p style={{ color: "#aaa", margin: "20px 0" }}>Um momento...</p>}
+          <button style={S.btn} onClick={closeModal}>Fechar</button>
+        </div>
+      );
+    }
+
+    return (
+      <div style={S.overlay} onClick={closeModal}>
+        <div style={S.modal} onClick={e => e.stopPropagation()}>{body}</div>
+      </div>
+    );
+  };
+
+  // ── HOME ──
+  const renderHome = () => {
+    const pending = state.pendingActs.filter(a => a.scores[u] === null);
+    return (
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h2 style={{ color: "#fff", fontSize: 18, margin: 0 }}>Olá, {state.names[u]} 👋</h2>
+          <button style={S.switchBtn} onClick={() => setState(p => ({ ...p, activeUser: other }))}>Trocar</button>
+        </div>
+        <LoveCube points={state.points} />
+        {pending.length > 0 && (
+          <div style={{ background: "#3b2040", borderRadius: 12, padding: 12, marginTop: 8 }}>
+            <p style={{ color: "#f9a8d4", fontSize: 13, margin: "0 0 8px" }}>⭐ Atos pendentes de avaliação</p>
+            {pending.slice(0, 3).map(act => (
+              <div key={act.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#2a1a30", borderRadius: 8, padding: "8px 10px", marginBottom: 6 }}>
+                <p style={{ color: "#ddd", fontSize: 13, margin: 0, flex: 1, marginRight: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{act.text}</p>
+                <button style={S.smallBtn} onClick={() => { setEvalAct(act); setEvalScore(5); setModal("evaluate"); }}>Avaliar</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {state.acts.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <p style={{ color: "#aaa", fontSize: 13, marginBottom: 6 }}>📜 Últimos atos completados</p>
+            {[...state.acts].reverse().slice(0, 3).map(act => (
+              <div key={act.id} style={S.card}>
+                <p style={{ color: "#eee", fontSize: 13, margin: "0 0 4px" }}>{act.text}</p>
+                <p style={{ color: "#888", fontSize: 11, margin: 0 }}>por {state.names[act.createdBy]} • média: <span style={{ color: "#f97316" }}>{((act.scores[0] + act.scores[1]) / 2).toFixed(1)}</span></p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── ACTS ──
+  const renderActs = () => (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <h2 style={{ color: "#fff", fontSize: 18, margin: 0 }}>✨ Atos de Amor</h2>
+        <button style={S.smallBtn} onClick={() => setModal("addAct")}>+ Novo</button>
+      </div>
+      {state.pendingActs.length === 0 && state.acts.length === 0 && <p style={{ color: "#666", textAlign: "center", marginTop: 40 }}>Nenhum ato ainda.<br />Adicione um ato de amor! 💝</p>}
+      {state.pendingActs.length > 0 && (
+        <>
+          <p style={{ color: "#f9a8d4", fontSize: 13, margin: "0 0 6px" }}>⏳ Pendentes</p>
+          {state.pendingActs.map(act => (
+            <div key={act.id} style={S.cardPending}>
+              <p style={{ color: "#eee", fontSize: 14, margin: "0 0 4px" }}>{act.text}</p>
+              <p style={{ color: "#888", fontSize: 11, margin: "0 0 8px" }}>por {state.names[act.createdBy]} • {new Date(act.createdAt).toLocaleDateString("pt-BR")}</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                {act.scores[u] === null
+                  ? <button style={S.smallBtn} onClick={() => { setEvalAct(act); setEvalScore(5); setModal("evaluate"); }}>Sua avaliação</button>
+                  : <span style={{ color: "#f97316", fontSize: 13 }}>Você: {act.scores[u]}/10</span>}
+                {act.scores[other] !== null ? <span style={{ color: "#aaa", fontSize: 13 }}>{state.names[other]}: {act.scores[other]}/10</span> : act.scores[u] !== null && <span style={{ color: "#666", fontSize: 12 }}>Esperando {state.names[other]}...</span>}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      {state.acts.length > 0 && (
+        <>
+          <p style={{ color: "#aaa", fontSize: 13, margin: "16px 0 6px" }}>✅ Completados</p>
+          {[...state.acts].reverse().map(act => (
+            <div key={act.id} style={S.card}>
+              <p style={{ color: "#eee", fontSize: 14, margin: "0 0 4px" }}>{act.text}</p>
+              <p style={{ color: "#888", fontSize: 11, margin: "0 0 4px" }}>por {state.names[act.createdBy]} • {new Date(act.createdAt).toLocaleDateString("pt-BR")}</p>
+              <p style={{ color: "#f97316", fontSize: 13, margin: 0 }}>{state.names[0]}: {act.scores[0]} | {state.names[1]}: {act.scores[1]} | Média: {((act.scores[0] + act.scores[1]) / 2).toFixed(1)}</p>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+
+  // ── NOTES ──
+  const renderNotes = () => (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <h2 style={{ color: "#fff", fontSize: 18, margin: 0 }}>📝 Notas</h2>
+        <button style={S.smallBtn} onClick={() => setModal("addNote")}>+ Nova</button>
+      </div>
+      <div style={{ background: "linear-gradient(135deg, #3b1f3b, #2a1540)", borderRadius: 14, padding: 14, marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <p style={{ color: "#f9a8d4", fontSize: 13, margin: "0 0 2px" }}>💌 Créditos disponíveis</p>
+            <p style={{ color: "#fff", fontSize: 24, margin: 0, fontWeight: 700 }}>{state.credits[u]}</p>
+          </div>
+          <button style={{ ...S.revealBtn, opacity: state.credits[u] > 0 && state.notes[other].length > 0 ? 1 : 0.4 }}
+            disabled={state.credits[u] <= 0 || state.notes[other].length === 0} onClick={handleReveal}>
+            Revelar ✉️
+          </button>
+        </div>
+        {state.notes[other].length === 0 && <p style={{ color: "#888", fontSize: 12, margin: "8px 0 0" }}>{state.names[other]} ainda não tem notas.</p>}
+      </div>
+      <p style={{ color: "#aaa", fontSize: 13, margin: "0 0 6px" }}>📒 Suas notas ({state.names[u]})</p>
+      {state.notes[u].length === 0 && <p style={{ color: "#666", fontSize: 13 }}>Nenhuma nota ainda.</p>}
+      {state.notes[u].map((n, i) => (
+        <div key={i} style={S.card}>
+          <p style={{ color: "#f9a8d4", fontSize: 14, fontStyle: "italic", margin: "0 0 6px" }}>{n.text}</p>
+          <p style={{ color: "#666", fontSize: 11, margin: 0 }}>{new Date(n.createdAt).toLocaleString("pt-BR")}</p>
+        </div>
+      ))}
+      {state.revealedNotes.length > 0 && (
+        <>
+          <p style={{ color: "#aaa", fontSize: 13, margin: "16px 0 6px" }}>💝 Notas reveladas</p>
+          {state.revealedNotes.map((n, i) => (
+            <div key={i} style={{ ...S.cardPending, borderLeft: "3px solid #e11d48" }}>
+              <p style={{ color: "#999", fontSize: 12, margin: "0 0 4px" }}>de {state.names[n.revealedBy === 0 ? 1 : 0]}</p>
+              <p style={{ color: "#f9a8d4", fontSize: 14, fontStyle: "italic", margin: "0 0 6px" }}>{n.text}</p>
+              <p style={{ color: "#666", fontSize: 11, margin: 0 }}>Revelado em {new Date(n.revealedAt).toLocaleString("pt-BR")}</p>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+
+  const tabs = [
+    { id: "home", icon: "💕", label: "Início" },
+    { id: "acts", icon: "✨", label: "Atos" },
+    { id: "notes", icon: "📝", label: "Notas" }
+  ];
+
+  return (
+    <div style={S.wrap}>
+      <div style={S.container}>
+        <div style={S.header}>
+          <span style={{ color: "#f9a8d4", fontSize: 15, fontWeight: 600 }}>{state.names[0]}</span>
+          <span style={{ color: "#e11d48", fontSize: 18 }}>💕</span>
+          <span style={{ color: "#f9a8d4", fontSize: 15, fontWeight: 600 }}>{state.names[1]}</span>
+        </div>
+        <div style={S.content}>
+          {screen === "home" && renderHome()}
+          {screen === "acts" && renderActs()}
+          {screen === "notes" && renderNotes()}
+        </div>
+        <div style={S.nav}>
+          {tabs.map(t => (
+            <button key={t.id} style={{ ...S.navBtn, ...(screen === t.id ? S.navActive : {}) }} onClick={() => setScreen(t.id)}>
+              <span style={{ fontSize: 20 }}>{t.icon}</span>
+              <span style={{ fontSize: 10, marginTop: 2 }}>{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      {renderModal()}
+    </div>
+  );
+}
