@@ -9,124 +9,218 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Babel (para JSX no browser) -->
+  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { margin:0; background:#0f0a14; font-family:Segoe UI, sans-serif; }
+    button { cursor:pointer }
+  </style>
 </head>
 
-<body style="margin:0;background:#0f0a14;">
-  <div id="root"></div>
+<body>
+<div id="root"></div>
 
-  <script type="text/babel">
+<script type="text/babel">
 
-    const { useState, useEffect } = React;
+const { useState, useEffect } = React;
 
-    const DECAY_PER_DAY = 1.5;
-    const MAX_POINTS = 100;
-    const CREDIT_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+/* ===== CONFIG ===== */
+const DECAY_PER_DAY = 1.5;
+const MAX_POINTS = 100;
+const CREDIT_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
-    function LoveCube({ points }) {
-      const pct = Math.min((points / MAX_POINTS) * 100, 100);
-      const color = `hsl(${Math.max(0, 20 - pct * 0.1)}, ${70 + pct * 0.3}%, ${45 - pct * 0.1}%)`;
-      const glow = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 60%)`;
-      const msg =
-        pct < 15 ? "💔 Precisa de amor!" :
-        pct < 40 ? "💛 Crescendo..." :
-        pct < 70 ? "🧡 Esquentando!" :
-        "❤️ Transbordo de amor!";
+/* ===== LOVE CUBE ===== */
+function LoveCube({ points }) {
+  const pct = Math.min((points / MAX_POINTS) * 100, 100);
+  const color = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 45%)`;
+  const glow = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 60%)`;
 
-      return (
-        <div style={{ display:"flex",flexDirection:"column",alignItems:"center",margin:"12px 0" }}>
-          <div style={{
-            width:160,height:180,position:"relative",
-            background:"linear-gradient(145deg, rgba(255,255,255,0.08), rgba(0,0,0,0.3))",
-            border:"2px solid rgba(255,255,255,0.15)",borderRadius:16,overflow:"hidden",
-            boxShadow:`0 0 30px ${glow}44, inset 0 0 40px rgba(0,0,0,0.3)`
-          }}>
-            <div style={{
-              position:"absolute",bottom:0,left:0,right:0,height:`${pct}%`,
-              background:`linear-gradient(180deg, ${glow}, ${color})`,
-              transition:"height 1s ease"
-            }} />
-          </div>
-          <p style={{ color:"#ccc",fontSize:13,marginTop:8 }}>{msg}</p>
-          <p style={{ color:"#aaa",fontSize:12 }}>{Math.round(points)} / {MAX_POINTS}</p>
-        </div>
-      );
-    }
+  const msg =
+    pct < 15 ? "💔 Precisa de amor!" :
+    pct < 40 ? "💛 Crescendo..." :
+    pct < 70 ? "🧡 Esquentando!" :
+    "❤️ Transbordo de amor!";
 
-    function App() {
-      const [state, setState] = useState({
-        setup:false,
-        names:["",""],
-        activeUser:0,
-        points:42
-      });
-
-      if (!state.setup) {
-        return (
-          <div style={{
-            minHeight:"100vh",display:"flex",flexDirection:"column",
-            alignItems:"center",justifyContent:"center",
-            color:"#fff",fontFamily:"Segoe UI"
-          }}>
-            <h1>💕 LeDuo</h1>
-            <input placeholder="Pessoa 1"
-              value={state.names[0]}
-              onChange={e=>{
-                const n=[...state.names];n[0]=e.target.value;
-                setState({...state,names:n});
-              }}
-              style={{margin:6,padding:10,borderRadius:8}}
-            />
-            <input placeholder="Pessoa 2"
-              value={state.names[1]}
-              onChange={e=>{
-                const n=[...state.names];n[1]=e.target.value;
-                setState({...state,names:n});
-              }}
-              style={{margin:6,padding:10,borderRadius:8}}
-            />
-            <button
-              disabled={!state.names[0]||!state.names[1]}
-              onClick={()=>setState({...state,setup:true})}
-              style={{
-                marginTop:10,padding:"10px 18px",
-                borderRadius:10,border:"none",
-                background:"#e11d48",color:"#fff"
-              }}>
-              Começar 💕
-            </button>
-          </div>
-        );
-      }
-
-      return (
+  return (
+    <div style={{ textAlign:"center", margin:"12px 0" }}>
+      <div style={{
+        width:160,height:180,margin:"0 auto",
+        borderRadius:16,overflow:"hidden",
+        border:"2px solid rgba(255,255,255,.15)",
+        background:"#1e1e2e",
+        boxShadow:`0 0 30px ${glow}44`
+      }}>
         <div style={{
-          minHeight:"100vh",
-          background:"#15101f",
-          color:"#fff",
-          fontFamily:"Segoe UI",
-          padding:16
-        }}>
-          <h2>Olá, {state.names[state.activeUser]} 👋</h2>
-          <LoveCube points={state.points} />
-          <button
-            onClick={()=>setState({...state,activeUser:state.activeUser===0?1:0})}
-            style={{
-              padding:"6px 12px",
-              borderRadius:8,
-              border:"none",
-              background:"#2a1a30",
-              color:"#fff"
-            }}>
-            Trocar Usuário
-          </button>
+          height:`${pct}%`,
+          background:`linear-gradient(180deg, ${glow}, ${color})`,
+          transition:"height 1s ease"
+        }} />
+      </div>
+      <p style={{ color:"#ccc", fontSize:13 }}>{msg}</p>
+      <p style={{ color:"#777", fontSize:12 }}>{Math.round(points)} / {MAX_POINTS}</p>
+    </div>
+  );
+}
+
+/* ===== APP ===== */
+function App() {
+  const [state, setState] = useState(() => {
+    const saved = localStorage.getItem("leduo");
+    return saved ? JSON.parse(saved) : {
+      setup:false,
+      names:["",""],
+      activeUser:0,
+      points:42,
+      acts:[],
+      pendingActs:[],
+      notes:[[],[]],
+      credits:[1,1],
+      lastDecay:Date.now(),
+      lastCredit:Date.now()
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem("leduo", JSON.stringify(state));
+  }, [state]);
+
+  /* DECAY */
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setState(p => {
+        const days = (Date.now() - p.lastDecay) / 86400000;
+        if (days < 0.01) return p;
+        return {
+          ...p,
+          points: Math.max(0, p.points - days * DECAY_PER_DAY),
+          lastDecay: Date.now()
+        };
+      });
+    }, 60000);
+    return () => clearInterval(iv);
+  }, []);
+
+  /* CREDITS */
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setState(p => {
+        if (Date.now() - p.lastCredit >= CREDIT_INTERVAL_MS) {
+          return {
+            ...p,
+            credits:[p.credits[0]+1,p.credits[1]+1],
+            lastCredit:Date.now()
+          };
+        }
+        return p;
+      });
+    }, 60000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const u = state.activeUser;
+  const other = u === 0 ? 1 : 0;
+
+  if (!state.setup) {
+    return (
+      <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", color:"#fff" }}>
+        <h1>💕 LeDuo</h1>
+        <input placeholder="Pessoa 1" value={state.names[0]}
+          onChange={e=>{const n=[...state.names];n[0]=e.target.value;setState({...state,names:n});}}
+          style={{padding:10,borderRadius:8,margin:4}}/>
+        <input placeholder="Pessoa 2" value={state.names[1]}
+          onChange={e=>{const n=[...state.names];n[1]=e.target.value;setState({...state,names:n});}}
+          style={{padding:10,borderRadius:8,margin:4}}/>
+        <button disabled={!state.names[0]||!state.names[1]}
+          onClick={()=>setState({...state,setup:true})}
+          style={{marginTop:10,padding:"10px 20px",borderRadius:10,border:"none",background:"#e11d48",color:"#fff"}}>
+          Começar 💕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#15101f", color:"#fff", padding:16 }}>
+      <h2>Olá, {state.names[u]} 👋</h2>
+      <LoveCube points={state.points} />
+
+      <button onClick={()=>setState({...state,activeUser:other})}
+        style={{padding:"6px 12px",borderRadius:8,border:"none",background:"#2a1a30",color:"#fff"}}>
+        Trocar Usuário
+      </button>
+
+      <hr style={{opacity:.2,margin:"16px 0"}}/>
+
+      <h3>✨ Novo Ato</h3>
+      <button onClick={()=>{
+        const text = prompt("Descreva o ato de amor:");
+        if (!text) return;
+        setState(p=>({
+          ...p,
+          pendingActs:[...p.pendingActs,{
+            id:Date.now(),
+            text,
+            scores:[null,null],
+            createdBy:u
+          }]
+        }));
+      }}
+      style={{padding:8,borderRadius:8,background:"#e11d48",border:"none",color:"#fff"}}>
+        + Adicionar
+      </button>
+
+      {state.pendingActs.map(a=>(
+        <div key={a.id} style={{background:"#2a1a30",padding:10,borderRadius:8,marginTop:8}}>
+          <p>{a.text}</p>
+          {a.scores[u]==null &&
+            <button onClick={()=>{
+              const score = Number(prompt("Nota 0 a 10"));
+              if (isNaN(score)) return;
+              setState(p=>{
+                const acts = p.pendingActs.map(x=>{
+                  if (x.id!==a.id) return x;
+                  const s=[...x.scores]; s[u]=score;
+                  return {...x,scores:s};
+                });
+                return {...p,pendingActs:acts,points:Math.min(MAX_POINTS,p.points+score/2)};
+              });
+            }}>Avaliar</button>}
         </div>
-      );
-    }
+      ))}
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      <hr style={{opacity:.2,margin:"16px 0"}}/>
 
-  </script>
+      <h3>📝 Notas</h3>
+      <button onClick={()=>{
+        const text = prompt("Escreva uma nota:");
+        if (!text) return;
+        setState(p=>{
+          const n=[...p.notes]; n[u]=[...n[u],{text,createdAt:Date.now()}];
+          return {...p,notes:n};
+        });
+      }}
+      style={{padding:8,borderRadius:8,background:"#c026d3",border:"none",color:"#fff"}}>
+        + Nova Nota
+      </button>
+
+      <p>💌 Créditos: {state.credits[u]}</p>
+
+      <button disabled={state.credits[u]<=0||state.notes[other].length===0}
+        onClick={()=>{
+          const note = state.notes[other][Math.floor(Math.random()*state.notes[other].length)];
+          alert(note.text);
+          const c=[...state.credits];c[u]--;
+          setState({...state,credits:c});
+        }}>
+        Revelar Nota
+      </button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
 </body>
 </html>
