@@ -1,226 +1,1487 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>LeDuo 💕</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- React -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <meta charset="utf-8" />
 
-  <!-- Babel -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+
+  <title>LeDuo — Love Cube</title>
+
+
+
+  <!-- React + ReactDOM UMD -->
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel for JSX in-browser (OK for prototypes / GitHub Pages) -->
+
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+
+
   <style>
-    body { margin:0; background:#0f0a14; font-family:Segoe UI, sans-serif; }
-    button { cursor:pointer }
+
+    :root{
+
+      --bg:#0f0a14; --card:#15101f; --muted:#9aa0a6; --accent1:#e11d48; --accent2:#c026d3;
+
+      --glass: rgba(255,255,255,0.04);
+
+      --radius:14px;
+
+      --text:#e9e8ee;
+
+      --soft:#2a1a30;
+
+      --success:#34d399;
+
+      --danger:#fb7185;
+
+      --safe-padding: env(safe-area-inset-bottom, 12px);
+
+    }
+
+    *{box-sizing:border-box}
+
+    html,body,#root{height:100%}
+
+    body{
+
+      margin:0;
+
+      background: linear-gradient(180deg,var(--bg), #0b0610 140%);
+
+      color:var(--text);
+
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial;
+
+      -webkit-font-smoothing:antialiased;
+
+      -moz-osx-font-smoothing:grayscale;
+
+      -webkit-tap-highlight-color: transparent;
+
+    }
+
+
+
+    /* App layout */
+
+    .app {
+
+      max-width: 920px;
+
+      margin: 0 auto;
+
+      min-height:100vh;
+
+      display:flex;
+
+      flex-direction:column;
+
+      padding: 12px;
+
+    }
+
+    header.app-header{
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:space-between;
+
+      gap:12px;
+
+      padding:14px;
+
+      background: linear-gradient(180deg,#1f1030,#15101f);
+
+      border-radius:12px;
+
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+
+      border: 1px solid rgba(255,255,255,0.03);
+
+    }
+
+    .names {display:flex; gap:8px; align-items:center;}
+
+    .name-pill {padding:8px 12px; border-radius:999px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); font-weight:600; color:var(--text)}
+
+    .logo {font-size:18px; color:var(--accent1); font-weight:700; display:flex; gap:8px; align-items:center}
+
+    .controls {display:flex; gap:8px; align-items:center}
+
+
+
+    main.content {
+
+      padding:12px 0;
+
+      display:flex;
+
+      gap:12px;
+
+      flex:1;
+
+      align-items:flex-start;
+
+    }
+
+
+
+    /* columns */
+
+    .col {flex:1; min-width:0}
+
+    .left {max-width:420px}
+
+
+
+    .card {
+
+      background: linear-gradient(180deg,#1c1724,#15101f);
+
+      border-radius: var(--radius);
+
+      padding:12px;
+
+      border: 1px solid rgba(255,255,255,0.03);
+
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+
+      margin-bottom:12px;
+
+    }
+
+
+
+    /* LoveCube */
+
+    .cube-wrap {display:flex; flex-direction:column; align-items:center; gap:6px}
+
+    .cube {
+
+      width:170px; height:190px; border-radius:16px; overflow:hidden;
+
+      position:relative; border:1px solid rgba(255,255,255,0.06);
+
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.3));
+
+    }
+
+    .liquid {
+
+      position:absolute; left:0; right:0; bottom:0;
+
+      transition: height 1s cubic-bezier(.2,.9,.3,1);
+
+      display:block;
+
+      border-radius: 0 0 14px 14px;
+
+      box-shadow: inset 0 18px 40px rgba(0,0,0,0.35);
+
+    }
+
+    .cube-gloss {position:absolute; left:0; top:0; width:40%; height:100%; background:linear-gradient(135deg, rgba(255,255,255,0.08), transparent 60%); pointer-events:none}
+
+    .cube-grid-line {position:absolute; left:0; right:0; height:1px; background:rgba(255,255,255,0.03) }
+
+
+
+    .cube-msg {font-size:13px; color:var(--muted)}
+
+
+
+    /* Tabs */
+
+    .tabs {display:flex; gap:8px; margin-bottom:8px;}
+
+    .tab {padding:10px 12px; border-radius:12px; background:transparent; border:0; color:var(--muted); font-weight:600; cursor:pointer}
+
+    .tab.active {background: linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; box-shadow: 0 6px 18px rgba(192,38,211,0.12)}
+
+
+
+    /* list items */
+
+    .item {display:flex; gap:10px; align-items:center; justify-content:space-between}
+
+    .item .text{flex:1; color:#eae8ee; font-size:14px; margin-right:8px}
+
+    .muted{color:var(--muted); font-size:12px}
+
+    .badge {padding:6px 8px; border-radius:10px; background:rgba(255,255,255,0.03); font-weight:700; color:var(--accent1)}
+
+
+
+    /* buttons */
+
+    .btn {padding:10px 14px; border-radius:12px; border:0; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; font-weight:700}
+
+    .btn.ghost {background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--text)}
+
+    .btn.small {padding:7px 10px; font-size:13px; border-radius:10px}
+
+
+
+    /* input & textarea */
+
+    input[type="text"], textarea {
+
+      width:100%; padding:12px; background:#1b1723; color:var(--text); border-radius:10px; border:1px solid rgba(255,255,255,0.03);
+
+      font-size:14px;
+
+    }
+
+    textarea{min-height:96px; resize:vertical}
+
+
+
+    /* modal */
+
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:60; padding:20px }
+
+    .modal { width:100%; max-width:420px; background:linear-gradient(180deg,#1a1025,#15101f); border-radius:16px; padding:18px; box-shadow:0 20px 80px rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.04) }
+
+    .modal h3 {margin:0 0 8px; color:var(--text)}
+
+    .row {display:flex; gap:8px; align-items:center}
+
+
+
+    /* footer nav (mobile) */
+
+    .mobile-nav { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(var(--safe-padding) + 8px); width:calc(100% - 24px); max-width:420px; display:flex; justify-content:space-around; background:rgba(21,16,31,0.98); border-radius:14px; padding:8px; border:1px solid rgba(255,255,255,0.04); z-index:70}
+
+    .mobile-nav button {background:none; border:0; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px}
+
+    .mobile-nav button.active {color:var(--accent1)}
+
+
+
+    /* responsive */
+
+    @media(min-width:900px){
+
+      main.content {flex-direction:row}
+
+      .left{max-width:420px}
+
+    }
+
+    @media(max-width:899px){
+
+      main.content {flex-direction:column}
+
+    }
+
+
+
+    /* small animations */
+
+    @keyframes floatUp {0%{transform:translateY(0)}100%{transform:translateY(-8px)}}
+
+    .spark {animation: floatUp 2.4s infinite ease-in-out alternate}
+
+
+
+    /* accessibility focus */
+
+    button:focus, input:focus, textarea:focus {outline:2px solid rgba(225,29,72,0.18); outline-offset:2px}
+
   </style>
+
 </head>
 
 <body>
-<div id="root"></div>
 
-<script type="text/babel">
+  <div id="root"></div>
 
-const { useState, useEffect } = React;
 
-/* ===== CONFIG ===== */
-const DECAY_PER_DAY = 1.5;
-const MAX_POINTS = 100;
-const CREDIT_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
-/* ===== LOVE CUBE ===== */
-function LoveCube({ points }) {
-  const pct = Math.min((points / MAX_POINTS) * 100, 100);
-  const color = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 45%)`;
-  const glow = `hsl(${Math.max(0, 20 - pct * 0.1)}, 80%, 60%)`;
+  <script type="text/babel">
 
-  const msg =
-    pct < 15 ? "💔 Precisa de amor!" :
-    pct < 40 ? "💛 Crescendo..." :
-    pct < 70 ? "🧡 Esquentando!" :
-    "❤️ Transbordo de amor!";
+  const { useState, useEffect, useRef } = React;
 
-  return (
-    <div style={{ textAlign:"center", margin:"12px 0" }}>
-      <div style={{
-        width:160,height:180,margin:"0 auto",
-        borderRadius:16,overflow:"hidden",
-        border:"2px solid rgba(255,255,255,.15)",
-        background:"#1e1e2e",
-        boxShadow:`0 0 30px ${glow}44`
-      }}>
-        <div style={{
-          height:`${pct}%`,
-          background:`linear-gradient(180deg, ${glow}, ${color})`,
-          transition:"height 1s ease"
-        }} />
-      </div>
-      <p style={{ color:"#ccc", fontSize:13 }}>{msg}</p>
-      <p style={{ color:"#777", fontSize:12 }}>{Math.round(points)} / {MAX_POINTS}</p>
-    </div>
-  );
-}
 
-/* ===== APP ===== */
-function App() {
-  const [state, setState] = useState(() => {
-    const saved = localStorage.getItem("leduo");
-    return saved ? JSON.parse(saved) : {
-      setup:false,
-      names:["",""],
-      activeUser:0,
-      points:42,
-      acts:[],
-      pendingActs:[],
-      notes:[[],[]],
-      credits:[1,1],
-      lastDecay:Date.now(),
-      lastCredit:Date.now()
-    };
-  });
 
-  useEffect(() => {
-    localStorage.setItem("leduo", JSON.stringify(state));
-  }, [state]);
+  /* ---- Constants ---- */
 
-  /* DECAY */
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setState(p => {
-        const days = (Date.now() - p.lastDecay) / 86400000;
-        if (days < 0.01) return p;
-        return {
-          ...p,
-          points: Math.max(0, p.points - days * DECAY_PER_DAY),
-          lastDecay: Date.now()
-        };
-      });
-    }, 60000);
-    return () => clearInterval(iv);
-  }, []);
+  const DECAY_PER_DAY = 1.5;
 
-  /* CREDITS */
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setState(p => {
-        if (Date.now() - p.lastCredit >= CREDIT_INTERVAL_MS) {
-          return {
-            ...p,
-            credits:[p.credits[0]+1,p.credits[1]+1],
-            lastCredit:Date.now()
-          };
-        }
-        return p;
-      });
-    }, 60000);
-    return () => clearInterval(iv);
-  }, []);
+  const MAX_POINTS = 100;
 
-  const u = state.activeUser;
-  const other = u === 0 ? 1 : 0;
+  const CREDIT_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; // weekly
 
-  if (!state.setup) {
+
+
+  /* ---- Helpers ---- */
+
+  const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2,9);
+
+  const now = () => Date.now();
+
+
+
+  /* ---- LoveCube component (fancier) ---- */
+
+  function LoveCube({ points }) {
+
+    const pct = Math.max(0, Math.min(100, (points / MAX_POINTS) * 100));
+
+    const hue = 340 - (pct * 0.9); // red-ish -> pink
+
+    const color = `hsl(${hue}, 78%, ${45 - pct * 0.08}%)`;
+
+    const glow = `hsla(${hue}, 88%, ${55 - pct * 0.06}%, 0.9)`;
+
+    const msg =
+
+      pct < 12 ? "💔 Precisa de carinho" :
+
+      pct < 35 ? "💛 Florescendo" :
+
+      pct < 70 ? "🧡 Esquentando" :
+
+      "❤️ Transbordando";
+
+
+
     return (
-      <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", color:"#fff" }}>
-        <h1>💕 LeDuo</h1>
-        <input placeholder="Pessoa 1" value={state.names[0]}
-          onChange={e=>{const n=[...state.names];n[0]=e.target.value;setState({...state,names:n});}}
-          style={{padding:10,borderRadius:8,margin:4}}/>
-        <input placeholder="Pessoa 2" value={state.names[1]}
-          onChange={e=>{const n=[...state.names];n[1]=e.target.value;setState({...state,names:n});}}
-          style={{padding:10,borderRadius:8,margin:4}}/>
-        <button disabled={!state.names[0]||!state.names[1]}
-          onClick={()=>setState({...state,setup:true})}
-          style={{marginTop:10,padding:"10px 20px",borderRadius:10,border:"none",background:"#e11d48",color:"#fff"}}>
-          Começar 💕
-        </button>
+
+      <div className="card cube-wrap" aria-hidden="false">
+
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", width:"100%"}}>
+
+          <div>
+
+            <div style={{fontSize:13, color:"var(--muted)"}}>Seu Cubo</div>
+
+            <div style={{fontSize:20, fontWeight:700}}>{Math.round(points)} / {MAX_POINTS}</div>
+
+          </div>
+
+          <div style={{textAlign:"right"}}>
+
+            <div style={{fontSize:12, color:"var(--muted)"}}>Nível</div>
+
+            <div style={{fontWeight:700, color: (pct>70? "var(--success)" : pct>35 ? "orange" : "var(--danger)" )}}>{Math.round(pct)}%</div>
+
+          </div>
+
+        </div>
+
+
+
+        <div style={{height:12}} />
+
+
+
+        <div className="cube" role="img" aria-label={`Cubo do amor ${Math.round(pct)} por cento`}>
+
+          <div style={{position:"absolute", left:0, right:0, top:0, bottom:0}}>
+
+            {[...Array(5)].map((_,i) => (
+
+              <div key={i} className="cube-grid-line" style={{top: 20 * (i+1) + "px", opacity:0.04}} />
+
+            ))}
+
+          </div>
+
+
+
+          <div
+
+            className="liquid"
+
+            style={{
+
+              height:`${pct}%`,
+
+              background: `linear-gradient(180deg, ${glow}, ${color})`
+
+            }}
+
+          />
+
+
+
+          <div className="cube-gloss" />
+
+
+
+        </div>
+
+
+
+        <div style={{height:8}} />
+
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", width:"100%"}}>
+
+          <div className="cube-msg">{msg}</div>
+
+          <div style={{fontSize:12, color:"var(--muted)"}}>{Math.round((points/MAX_POINTS)*100)}%</div>
+
+        </div>
+
       </div>
+
     );
+
   }
 
-  return (
-    <div style={{ minHeight:"100vh", background:"#15101f", color:"#fff", padding:16 }}>
-      <h2>Olá, {state.names[u]} 👋</h2>
-      <LoveCube points={state.points} />
 
-      <button onClick={()=>setState({...state,activeUser:other})}
-        style={{padding:"6px 12px",borderRadius:8,border:"none",background:"#2a1a30",color:"#fff"}}>
-        Trocar Usuário
-      </button>
 
-      <hr style={{opacity:.2,margin:"16px 0"}}/>
+  /* ---- Modal component ---- */
 
-      <h3>✨ Novo Ato</h3>
-      <button onClick={()=>{
-        const text = prompt("Descreva o ato de amor:");
-        if (!text) return;
-        setState(p=>({
-          ...p,
-          pendingActs:[...p.pendingActs,{
-            id:Date.now(),
-            text,
-            scores:[null,null],
-            createdBy:u
-          }]
-        }));
-      }}
-      style={{padding:8,borderRadius:8,background:"#e11d48",border:"none",color:"#fff"}}>
-        + Adicionar
-      </button>
+  function Modal({open, onClose, children}) {
 
-      {state.pendingActs.map(a=>(
-        <div key={a.id} style={{background:"#2a1a30",padding:10,borderRadius:8,marginTop:8}}>
-          <p>{a.text}</p>
-          {a.scores[u]==null &&
-            <button onClick={()=>{
-              const score = Number(prompt("Nota 0 a 10"));
-              if (isNaN(score)) return;
-              setState(p=>{
-                const acts = p.pendingActs.map(x=>{
-                  if (x.id!==a.id) return x;
-                  const s=[...x.scores]; s[u]=score;
-                  return {...x,scores:s};
-                });
-                return {...p,pendingActs:acts,points:Math.min(MAX_POINTS,p.points+score/2)};
-              });
-            }}>Avaliar</button>}
+    if (!open) return null;
+
+    return ReactDOM.createPortal(
+
+      <div className="overlay" onClick={onClose} role="dialog" aria-modal="true">
+
+        <div className="modal" onClick={e=>e.stopPropagation()}>
+
+          {children}
+
         </div>
-      ))}
 
-      <hr style={{opacity:.2,margin:"16px 0"}}/>
+      </div>,
 
-      <h3>📝 Notas</h3>
-      <button onClick={()=>{
-        const text = prompt("Escreva uma nota:");
-        if (!text) return;
-        setState(p=>{
-          const n=[...p.notes]; n[u]=[...n[u],{text,createdAt:Date.now()}];
-          return {...p,notes:n};
+      document.body
+
+    );
+
+  }
+
+
+
+  /* ---- Main App ---- */
+
+  function App() {
+
+    // Load saved or default state
+
+    const [store, setStore] = useState(()=> {
+
+      try {
+
+        const s = localStorage.getItem("leduo_v2");
+
+        if (s) {
+
+          const parsed = JSON.parse(s);
+
+          // ensure fields exist
+
+          return {...{
+
+            setup:false, names:["",""], activeUser:0, points:42,
+
+            acts:[], pendingActs:[], notes:[[],[]], revealedNotes:[],
+
+            credits:[1,1], lastDecay: now(), lastCredit: now()
+
+          }, ...parsed};
+
+        }
+
+      } catch (e) { /* ignore */ }
+
+      return {
+
+        setup:false, names:["",""], activeUser:0, points:42,
+
+        acts:[], pendingActs:[], notes:[[],[]], revealedNotes:[],
+
+        credits:[1,1], lastDecay: now(), lastCredit: now()
+
+      };
+
+    });
+
+
+
+    // UI state
+
+    const [screen, setScreen] = useState("home"); // home | acts | notes
+
+    const [modal, setModal] = useState(null); // addAct | evaluate | addNote | reveal | viewReveal
+
+    const [editAct, setEditAct] = useState(null);
+
+    const [draft, setDraft] = useState("");
+
+    const [evalScore, setEvalScore] = useState(7);
+
+    const [revealedNote, setRevealedNote] = useState(null);
+
+
+
+    // persist
+
+    useEffect(()=> {
+
+      try { localStorage.setItem("leduo_v2", JSON.stringify(store)); } catch(e){}
+
+    }, [store]);
+
+
+
+    // DECAY: compute precise decay using lastDecay timestamp (supports offline days)
+
+    useEffect(()=>{
+
+      const tick = () => {
+
+        setStore(prev => {
+
+          const elapsedDays = (now() - prev.lastDecay) / 86400000; // days
+
+          if (elapsedDays <= 0) return prev;
+
+          const decay = elapsedDays * DECAY_PER_DAY;
+
+          const newPoints = Math.max(0, prev.points - decay);
+
+          return {...prev, points: newPoints, lastDecay: now()};
+
         });
-      }}
-      style={{padding:8,borderRadius:8,background:"#c026d3",border:"none",color:"#fff"}}>
-        + Nova Nota
-      </button>
 
-      <p>💌 Créditos: {state.credits[u]}</p>
+      };
 
-      <button disabled={state.credits[u]<=0||state.notes[other].length===0}
-        onClick={()=>{
-          const note = state.notes[other][Math.floor(Math.random()*state.notes[other].length)];
-          alert(note.text);
-          const c=[...state.credits];c[u]--;
-          setState({...state,credits:c});
-        }}>
-        Revelar Nota
-      </button>
-    </div>
-  );
-}
+      const iv = setInterval(tick, 60000);
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+      return ()=>clearInterval(iv);
 
-</script>
+    },[]);
+
+
+
+    // Credits accumulation (accumulate full weeks)
+
+    useEffect(()=>{
+
+      const checkCredits = () => {
+
+        setStore(prev => {
+
+          const elapsedMs = now() - prev.lastCredit;
+
+          if (elapsedMs < CREDIT_INTERVAL_MS) return prev;
+
+          const weeks = Math.floor(elapsedMs / CREDIT_INTERVAL_MS);
+
+          const newCredits = [prev.credits[0] + weeks, prev.credits[1] + weeks];
+
+          return {...prev, credits: newCredits, lastCredit: prev.lastCredit + weeks * CREDIT_INTERVAL_MS};
+
+        });
+
+      };
+
+      const iv = setInterval(checkCredits, 60000);
+
+      checkCredits();
+
+      return ()=>clearInterval(iv);
+
+    },[]);
+
+
+
+    const u = store.activeUser;
+
+    const other = u === 0 ? 1 : 0;
+
+
+
+    /* ---- Actions ---- */
+
+    const startSetup = () => {
+
+      if (!store.names[0] || !store.names[1]) return;
+
+      setStore(s=>({...s, setup:true}));
+
+    };
+
+
+
+    const toggleUser = () => setStore(s=>({...s, activeUser: s.activeUser === 0 ? 1 : 0}));
+
+
+
+    const addAct = (text) => {
+
+      if (!text || text.trim().length < 3) return;
+
+      const act = { id: uid(), text: text.trim(), createdAt: now(), createdBy: u, scores: [null,null] };
+
+      setStore(s => ({...s, pendingActs: [...s.pendingActs, act]}));
+
+      setModal(null);
+
+      setDraft("");
+
+    };
+
+
+
+    const submitEval = (actId, score) => {
+
+      setStore(prev => {
+
+        const updated = prev.pendingActs.map(a => a.id === actId ? {...a, scores: [...a.scores.slice(0, a.scores.length), ...(a.scores),][0], } : a);
+
+        // We'll update properly below (easier to map)
+
+        const pending = prev.pendingActs.map(a => {
+
+          if (a.id !== actId) return a;
+
+          const s = [...a.scores]; s[prev.activeUser] = score;
+
+          return {...a, scores: s};
+
+        });
+
+
+
+        // check if act completed
+
+        const doneAct = pending.find(a => a.id === actId && a.scores[0] !== null && a.scores[1] !== null);
+
+        let acts = prev.acts;
+
+        let points = prev.points;
+
+        let finalPending = pending;
+
+        if (doneAct) {
+
+          const gained = (doneAct.scores[0] + doneAct.scores[1]) / 2;
+
+          points = Math.min(MAX_POINTS, Math.round((points + gained) * 100) / 100);
+
+          acts = [...prev.acts, {...doneAct}];
+
+          finalPending = pending.filter(a => a.id !== actId);
+
+        }
+
+        return {...prev, pendingActs: finalPending, acts, points};
+
+      });
+
+      setModal(null);
+
+      setEditAct(null);
+
+    };
+
+
+
+    const addNote = (text) => {
+
+      if (!text || text.trim().length < 1) return;
+
+      setStore(prev => {
+
+        const n = prev.notes.map(arr => [...arr]);
+
+        n[u].push({ id: uid(), text: text.trim(), createdAt: now() });
+
+        return {...prev, notes: n};
+
+      });
+
+      setModal(null);
+
+      setDraft("");
+
+    };
+
+
+
+    const revealRandomNote = () => {
+
+      const otherNotes = store.notes[other] || [];
+
+      if (!otherNotes.length) return;
+
+      if (store.credits[u] <= 0) return;
+
+      const index = Math.floor(Math.random() * otherNotes.length);
+
+      const note = otherNotes[index];
+
+      setStore(prev => {
+
+        const credits = [...prev.credits]; credits[u] = Math.max(0, credits[u] - 1);
+
+        const revealed = [...prev.revealedNotes, { ...note, revealedAt: now(), revealedBy: u }];
+
+        return {...prev, credits, revealedNotes: revealed};
+
+      });
+
+      setRevealedNote(note);
+
+      setModal("viewReveal");
+
+    };
+
+
+
+    const deleteNote = (noteId, owner) => {
+
+      setStore(prev => {
+
+        const n = prev.notes.map(arr => arr.filter(x => x.id !== noteId));
+
+        return {...prev, notes: n};
+
+      });
+
+    };
+
+
+
+    /* small helpers for UI */
+
+    const formatDate = ms => new Date(ms).toLocaleString("pt-BR");
+
+
+
+    /* ---- Render ---- */
+
+    return (
+
+      <div className="app" style={{paddingBottom: "calc(var(--safe-padding) + 84px)"}}>
+
+        <header className="app-header" role="banner">
+
+          <div className="names">
+
+            <div className="logo">LeDuo <span style={{fontSize:12, color:"var(--muted)", marginLeft:6}}>alpha</span></div>
+
+            <div className="name-pill" aria-hidden>{store.names[0] || "Pessoa 1"}</div>
+
+            <div style={{color:"var(--muted)"}}>💕</div>
+
+            <div className="name-pill" aria-hidden>{store.names[1] || "Pessoa 2"}</div>
+
+          </div>
+
+
+
+          <div className="controls">
+
+            <div style={{textAlign:"right", marginRight:8}}>
+
+              <div style={{fontSize:12, color:"var(--muted)"}}>{store.names[u] || "Você"}</div>
+
+              <div style={{fontWeight:700}}>{Math.round(store.points)} pts</div>
+
+            </div>
+
+
+
+            <div>
+
+              <button onClick={toggleUser} className="btn small" title="Trocar usuário">Trocar</button>
+
+            </div>
+
+          </div>
+
+        </header>
+
+
+
+        <main className="content" role="main">
+
+          <div className="col left">
+
+            <LoveCube points={store.points} />
+
+
+
+            <div className="card">
+
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                <div>
+
+                  <div style={{fontSize:13, color:"var(--muted)"}}>Créditos</div>
+
+                  <div style={{fontSize:20, fontWeight:800}}>{store.credits[u]}</div>
+
+                </div>
+
+                <div style={{display:"flex", gap:8, alignItems:"center"}}>
+
+                  <button className="btn small" onClick={()=>setModal("addAct")}>+ Ato</button>
+
+                  <button className="btn small" onClick={()=>setModal("addNote")} style={{background:"linear-gradient(90deg,#6366f1,#c026d3)"}}>+ Nota</button>
+
+                </div>
+
+              </div>
+
+
+
+              <div style={{height:8}} />
+
+
+
+              <div style={{display:"flex", gap:8, alignItems:"center", justifyContent:"space-between"}}>
+
+                <div style={{fontSize:13, color:"var(--muted)"}}>Notas do {store.names[other] || "Outro"}</div>
+
+                <button className="btn ghost small" onClick={revealRandomNote} disabled={store.credits[u] <= 0 || (store.notes[other] || []).length === 0}>
+
+                  Revelar ✉️
+
+                </button>
+
+              </div>
+
+              <div style={{height:8}} />
+
+              <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+
+                <div className="badge">Atos pendentes: {store.pendingActs.length}</div>
+
+                <div className="badge">Atos completos: {store.acts.length}</div>
+
+                <div className="badge">Notas: {(store.notes[u]||[]).length}</div>
+
+              </div>
+
+            </div>
+
+
+
+            <div className="card" style={{marginTop:12}}>
+
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                <div>
+
+                  <div style={{fontSize:13, color:"var(--muted)"}}>Últimos atos</div>
+
+                  <div style={{fontSize:16, fontWeight:800}}>Registro</div>
+
+                </div>
+
+                <div>
+
+                  <button className="btn ghost small" onClick={()=>setScreen("acts")}>Ver tudo</button>
+
+                </div>
+
+              </div>
+
+
+
+              <div style={{height:8}} />
+
+              {store.acts.slice(-3).length ? store.acts.slice(-3).map(a => (
+
+                <div key={a.id} style={{marginBottom:8}}>
+
+                  <div className="item">
+
+                    <div className="text">{a.text}</div>
+
+                    <div style={{textAlign:"right"}}>
+
+                      <div className="muted">{store.names[a.createdBy]}</div>
+
+                      <div style={{fontWeight:700, color:"#f97316"}}>{(((a.scores[0]||0)+(a.scores[1]||0))/2).toFixed(1)}</div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              )) : <div className="muted">Nenhum ato completo ainda. Adicione e avalie coisas bonitas 💝</div>}
+
+            </div>
+
+          </div>
+
+
+
+          <div className="col">
+
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8}}>
+
+              <div>
+
+                <div style={{fontSize:13, color:"var(--muted)"}}>Seção</div>
+
+                <div style={{fontSize:20, fontWeight:800}}>{screen === "home" ? "Início" : screen === "acts" ? "Atos" : "Notas"}</div>
+
+              </div>
+
+              <div>
+
+                <div className="tabs" role="tablist" aria-label="Navegação">
+
+                  <button className={`tab ${screen==="home"?"active":""}`} onClick={()=>setScreen("home")}>Início</button>
+
+                  <button className={`tab ${screen==="acts"?"active":""}`} onClick={()=>setScreen("acts")}>Atos</button>
+
+                  <button className={`tab ${screen==="notes"?"active":""}`} onClick={()=>setScreen("notes")}>Notas</button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            {/* Screen: acts */}
+
+            {screen === "acts" && (
+
+              <div>
+
+                <div className="card">
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">Pendentes</div>
+
+                      <div style={{fontWeight:800}}>{store.pendingActs.length} atos</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn ghost small" onClick={()=>{ setModal("addAct"); }}>Novo</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:10}} />
+
+                  {store.pendingActs.length === 0 ? <div className="muted">Nenhum ato pendente</div> :
+
+                    store.pendingActs.map(act => (
+
+                      <div key={act.id} className="card" style={{padding:10, marginBottom:8, background: "linear-gradient(180deg,#221631,#1b1220)"}}>
+
+                        <div style={{display:"flex", justifyContent:"space-between", gap:12}}>
+
+                          <div style={{flex:1}}>
+
+                            <div style={{fontWeight:700}}>{act.text}</div>
+
+                            <div className="muted">por {store.names[act.createdBy]} • {new Date(act.createdAt).toLocaleDateString("pt-BR")}</div>
+
+                          </div>
+
+                          <div style={{display:"flex", flexDirection:"column", gap:8, alignItems:"flex-end"}}>
+
+                            {act.scores[u] === null ?
+
+                              <button className="btn small" onClick={()=>{ setEditAct(act); setEvalScore(7); setModal("evaluate"); }}>Avaliar</button> :
+
+                              <div className="muted">Você: {act.scores[u]}/10</div>
+
+                            }
+
+                            {act.scores[other] !== null ?
+
+                              <div className="muted">{store.names[other]}: {act.scores[other]}/10</div> :
+
+                              act.scores[u] !== null && <div className="muted">Aguardando {store.names[other]}</div>
+
+                            }
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    ))
+
+                  }
+
+                </div>
+
+
+
+                <div className="card" style={{marginTop:12}}>
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">Completados</div>
+
+                      <div style={{fontWeight:800}}>{store.acts.length} atos</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn ghost small" onClick={()=>{ setStore(s=>({...s, acts: []})); }}>Limpar</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:10}} />
+
+                  {store.acts.length === 0 ? <div className="muted">Nenhum ato ainda</div> :
+
+                    store.acts.slice().reverse().map(a => (
+
+                      <div key={a.id} style={{padding:10, borderRadius:10, marginBottom:8, background:"linear-gradient(180deg,#15101f,#0f0811)"}}>
+
+                        <div style={{display:"flex", justifyContent:"space-between", gap:12}}>
+
+                          <div style={{flex:1}}>
+
+                            <div style={{fontWeight:700}}>{a.text}</div>
+
+                            <div className="muted">por {store.names[a.createdBy]} • {new Date(a.createdAt).toLocaleDateString("pt-BR")}</div>
+
+                          </div>
+
+                          <div style={{textAlign:"right"}}>
+
+                            <div style={{fontWeight:800, color:"#f97316"}}>Média: {(((a.scores[0]||0)+(a.scores[1]||0))/2).toFixed(1)}</div>
+
+                            <div className="muted">{a.scores[0]} | {a.scores[1]}</div>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    ))
+
+                  }
+
+                </div>
+
+              </div>
+
+            )}
+
+
+
+            {/* Screen: notes */}
+
+            {screen === "notes" && (
+
+              <div>
+
+                <div className="card">
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">As suas notas</div>
+
+                      <div style={{fontWeight:800}}>{store.notes[u].length} notas</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn small" onClick={()=>setModal("addNote")}>+ Nova</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:10}} />
+
+                  {store.notes[u].length === 0 ? <div className="muted">Você ainda não escreveu nada</div> :
+
+                    store.notes[u].slice().reverse().map(n => (
+
+                      <div key={n.id} style={{padding:10, borderRadius:10, marginBottom:8, background:"linear-gradient(180deg,#17121a,#0f0811)"}}>
+
+                        <div style={{display:"flex", justifyContent:"space-between", gap:8}}>
+
+                          <div style={{flex:1}}>
+
+                            <div style={{fontStyle:"italic", color:"#f9a8d4"}}>{n.text}</div>
+
+                            <div className="muted" style={{marginTop:6}}>{formatDate(n.createdAt)}</div>
+
+                          </div>
+
+                          <div style={{display:"flex", flexDirection:"column", gap:8}}>
+
+                            <button className="btn ghost small" onClick={()=>{ navigator.clipboard?.writeText(n.text); alert("Copiado!") }}>Copiar</button>
+
+                            <button className="btn ghost small" onClick={()=>deleteNote(n.id,u)}>Apagar</button>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    ))
+
+                  }
+
+                </div>
+
+
+
+                <div className="card" style={{marginTop:12}}>
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">Notas reveladas</div>
+
+                      <div style={{fontWeight:800}}>{store.revealedNotes.length} reveladas</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn ghost small" onClick={()=>setStore(s => ({...s, revealedNotes: []}))}>Limpar</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:10}} />
+
+                  {store.revealedNotes.length === 0 ? <div className="muted">Nada revelado ainda</div> :
+
+                    store.revealedNotes.slice().reverse().map(r => (
+
+                      <div key={r.id + "-" + r.revealedAt} style={{padding:10, borderRadius:10, marginBottom:8, background:"#1b1320"}}>
+
+                        <div style={{fontStyle:"italic", color:"#f9a8d4"}}>{r.text}</div>
+
+                        <div className="muted" style={{marginTop:6}}>Revelado em {formatDate(r.revealedAt)}</div>
+
+                      </div>
+
+                    ))
+
+                  }
+
+                </div>
+
+              </div>
+
+            )}
+
+
+
+            {/* Screen: home (default) */}
+
+            {screen === "home" && (
+
+              <div>
+
+                <div className="card">
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">Bem-vindo</div>
+
+                      <div style={{fontWeight:800}}>Cuidem do cubo juntos</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn ghost small" onClick={()=>{ setStore(s=>({...s, points: Math.min(MAX_POINTS, s.points + 8)})); }}>+8 pts</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:8}} />
+
+                  <div className="muted">Dicas rápidas:</div>
+
+                  <ul style={{margin:"8px 0 0 16px", color:"var(--muted)"}}>
+
+                    <li>Registre pequenos atos — amáveis e verdadeiros.</li>
+
+                    <li>Avaliem de 0 a 10 com sinceridade.</li>
+
+                    <li>Créditos para revelar notas são semanais — acumular é permitido.</li>
+
+                  </ul>
+
+                </div>
+
+
+
+                <div className="card" style={{marginTop:12}}>
+
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+
+                    <div>
+
+                      <div className="muted">Atos Pendentes</div>
+
+                      <div style={{fontWeight:800}}>{store.pendingActs.length}</div>
+
+                    </div>
+
+                    <div>
+
+                      <button className="btn small" onClick={()=>setScreen("acts")}>Avaliar</button>
+
+                    </div>
+
+                  </div>
+
+
+
+                  <div style={{height:8}} />
+
+                  {store.pendingActs.slice(0,3).length === 0 ? <div className="muted">Sem pendências</div> :
+
+                    store.pendingActs.slice(0,3).map(a => (
+
+                      <div key={a.id} style={{padding:8, borderRadius:10, marginBottom:8, background:"#1b1520"}}>
+
+                        <div style={{display:"flex", justifyContent:"space-between", gap:8}}>
+
+                          <div style={{flex:1}}>
+
+                            <div style={{fontWeight:700}}>{a.text}</div>
+
+                            <div className="muted">por {store.names[a.createdBy]}</div>
+
+                          </div>
+
+                          <div>
+
+                            {a.scores[u] === null ? <button className="btn small" onClick={()=>{ setEditAct(a); setEvalScore(7); setModal("evaluate"); }}>Avaliar</button> : <div className="muted">Você: {a.scores[u]}</div>}
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    ))
+
+                  }
+
+                </div>
+
+              </div>
+
+            )}
+
+
+
+          </div>
+
+        </main>
+
+
+
+        {/* mobile nav */}
+
+        <nav className="mobile-nav" style={{"--safe-padding":"env(safe-area-inset-bottom, 12px)"}}>
+
+          <button onClick={()=>setScreen("home")} className={screen==="home"?"active":""}>🏠<span style={{fontSize:11}}>Início</span></button>
+
+          <button onClick={()=>setScreen("acts")} className={screen==="acts"?"active":""}>✨<span style={{fontSize:11}}>Atos</span></button>
+
+          <button onClick={()=>setScreen("notes")} className={screen==="notes"?"active":""}>📝<span style={{fontSize:11}}>Notas</span></button>
+
+        </nav>
+
+
+
+        {/* Modals */}
+
+        <Modal open={modal === "addAct"} onClose={()=>setModal(null)}>
+
+          <h3>💝 Novo Ato de Amor</h3>
+
+          <div style={{marginTop:8}}>
+
+            <textarea placeholder="Ex: Preparei seu lanche favorito..." value={draft} onChange={e=>setDraft(e.target.value)} />
+
+            <div style={{display:"flex", gap:8, marginTop:10, justifyContent:"flex-end"}}>
+
+              <button className="btn ghost" onClick={()=>{ setModal(null); setDraft(""); }}>Cancelar</button>
+
+              <button className="btn" onClick={()=>{ addAct(draft); }}>Adicionar</button>
+
+            </div>
+
+          </div>
+
+        </Modal>
+
+
+
+        <Modal open={modal === "addNote"} onClose={()=>setModal(null)}>
+
+          <h3>📝 Nova Nota</h3>
+
+          <div style={{marginTop:8}}>
+
+            <textarea placeholder="Escreva algo do seu coração..." value={draft} onChange={e=>setDraft(e.target.value)} />
+
+            <div style={{display:"flex", gap:8, marginTop:10, justifyContent:"flex-end"}}>
+
+              <button className="btn ghost" onClick={()=>{ setModal(null); setDraft(""); }}>Fechar</button>
+
+              <button className="btn" onClick={()=>{ addNote(draft); }}>Salvar</button>
+
+            </div>
+
+          </div>
+
+        </Modal>
+
+
+
+        <Modal open={modal === "evaluate" && editAct} onClose={()=>{ setModal(null); setEditAct(null); }}>
+
+          <h3>⭐ Avaliar Ato</h3>
+
+          <div style={{marginTop:8}}>
+
+            <div style={{fontWeight:700}}>{editAct?.text}</div>
+
+            <div className="muted" style={{marginTop:6}}>por {store.names[editAct?.createdBy]}</div>
+
+
+
+            <div style={{height:12}} />
+
+            <div style={{display:"flex", alignItems:"center", gap:12}}>
+
+              <input type="range" min="0" max="10" value={evalScore} onChange={e=>setEvalScore(Number(e.target.value))} style={{flex:1}} />
+
+              <div style={{width:40, textAlign:"center", fontWeight:800}}>{evalScore}</div>
+
+            </div>
+
+
+
+            <div style={{display:"flex", gap:8, justifyContent:"flex-end", marginTop:12}}>
+
+              <button className="btn ghost" onClick={()=>{ setModal(null); setEditAct(null); }}>Cancelar</button>
+
+              <button className="btn" onClick={()=>{ submitEval(editAct.id, evalScore); }}>Confirmar</button>
+
+            </div>
+
+          </div>
+
+        </Modal>
+
+
+
+        <Modal open={modal === "viewReveal" && revealedNote} onClose={()=>{ setModal(null); setRevealedNote(null); }}>
+
+          <h3>💌 Nota Revelada</h3>
+
+          <div style={{marginTop:10, background:"#1b1320", padding:12, borderRadius:12}}>
+
+            <div style={{fontStyle:"italic", color:"#f9a8d4", fontSize:15}}>{revealedNote?.text}</div>
+
+            <div className="muted" style={{marginTop:8}}>{formatDate(revealedNote?.createdAt)}</div>
+
+          </div>
+
+          <div style={{display:"flex", gap:8, justifyContent:"flex-end", marginTop:12}}>
+
+            <button className="btn" onClick={()=>{ setModal(null); setRevealedNote(null); }}>Fechar</button>
+
+          </div>
+
+        </Modal>
+
+
+
+        {/* If modal triggered by revealRandomNote, revealNote is set via revealedNote state */}
+
+        {/* keep safe bottom spacing */}
+
+      </div>
+
+    );
+
+  }
+
+
+
+  // Render app — initial setup helper
+
+  function RootBootstrap(){
+
+    const [initialized, setInitialized] = useState(false);
+
+    const [initialNames, setInitialNames] = useState(["",""]);
+
+    useEffect(()=> setInitialized(true), []);
+
+    return <App />;
+
+  }
+
+
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<RootBootstrap />);
+
+
+
+  </script>
+
 </body>
+
 </html>
